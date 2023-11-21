@@ -1,6 +1,5 @@
 #! /bin/python
 import operator
-import json
 from datetime import datetime
 
 print("Write your story! (Ctrl-D to save)")
