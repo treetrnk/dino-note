@@ -63,10 +63,10 @@ save_dialog = f"File saved as {filename}!"
 
 
 print('')
-print(f"           ▅████████▅    /{'-' * multiplier}\\")
-print(f"           ██ ████████   | File saved as: {' ' * dialog_multiplier}|")
-print(f"           ███████████   | {filename} |")
-print(f"           █████▅▅▅▅▅   <_{'_' * multiplier}/")
+print(f"           ▅████████▅    ╭{'─' * multiplier}╮")
+print(f"           ██ ████████   │ File saved as: {' ' * dialog_multiplier}│")
+print(f"           ███████████  <  {filename} │")
+print(f"           █████▅▅▅▅▅    ╰{'─' * multiplier}╯")
 print("▅         █████          ")
 print("█▒     ▒████████▅        ")
 print("██▒  ▒█████████ ▀        ")
