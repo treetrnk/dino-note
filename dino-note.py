@@ -58,35 +58,41 @@ def save(options, contents, filename=None):
                 counter += 1
 
     # Set filename
-    newfile = datetime.now().strftime("%Y%m%d%a-%H%M%S")
-    newfile += "-" + word_count + "w" if word_count else ''
-    newfile += common_words 
+    filename = ''
+    if options.get('filename'):
+        filename = options.get('-f') or options.get('--filename')
+        filename += '-'
+    filename += datetime.now().strftime("%Y%m%d%a-%H%M%S")
+    filename += "-" + word_count + "w" if word_count else ''
+    if options.get('filename') == None:
+        filename += common_words 
     
     # Save append
-    if filename:
+    if options.get('append'):
+        append_file = options.get('-a') or options.get('--append')
         try:
             # Save file
-            f = open(filename, "a")
+            f = open(append_file, "a")
             f.write("\n")
             f.write("\n")
-            f.write(f"## {newfile}")
+            f.write(f"## {filename}")
             f.write("\n")
             for line in contents: 
                 f.write(line)
                 f.write("\n")
             f.close()
-            save_message(options, filename)
+            save_message(options, append_file)
         except Exception as e:
             pass
 
     # Save new file
-    newfile += ".md"
-    f = open(newfile, "a")
+    filename += ".md"
+    f = open(filename, "a")
     for line in contents: 
         f.write(line)
         f.write("\n")
     f.close()
-    save_message(options, newfile)
+    save_message(options, filename)
 
 
 def write(options, filename=None):
@@ -106,7 +112,7 @@ def write(options, filename=None):
 def main(argv):
     inputfile = ''
     outputfile = ''
-    opts, args = getopt.getopt(argv,"hna:",["help","no-dino","append="])
+    opts, args = getopt.getopt(argv,"hna:f:",["help","no-dino","append=","filename="])
     options = {}
     for opt, arg in opts:
         options[opt] = arg
@@ -117,10 +123,13 @@ def main(argv):
         print('OPTIONS')
         print('\t-h --help\t\t\tDisplay this help message')
         print('\t-a --append [filename]\t\tAppend writing to an existing file')
+        print('\t-f --filename [filename]\t\tSet the name of the file your writing will be saved as')
         print('\t-n --no-dino\t\t\tHide dino when file is saved')
         sys.exit()
-    elif any(o in options for o in ["-a", "--append"]):
-        write(options, filename=arg)
+    if any(o in options for o in ["-f", "--filename"]):
+        options['filename'] = options.get('-f') or options.get('--filename')
+    if any(o in options for o in ["-a", "--append"]):
+        options['append'] = options.get('-a') or options.get('--append')
 
     write(options)
 
