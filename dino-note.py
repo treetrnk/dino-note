@@ -25,11 +25,9 @@ def save_message(options, filename):
 
     sys.exit()
 
-def save(options, contents, filename=None):
-    
+def get_stats(contents, common_word_count=4):
     punctuations =  ["!", "(", ")", "-", "[", "]", "{", "}", ";", ":", "'", "\\", '"', ",", "<", ">", ".", "/", "?", "@", "#", "$", "%", "^", "&", "*", "_", "~"]
     skipped_words = ["the", "a", "to", "if", "is", "it", "of", "and", "or", "an", "as", "i", "me", "my", "we", "our", "ours", "you", "your", "yours", "he", "she", "him", "his", "her", "hers", "its", "they", "them", "their", "what", "which", "who", "whom", "this", "that", "am", "are", "was", "were", "be", "been", "being", "have", "has", "had", "do", "does", "did", "but", "at", "by", "with", "from", "here", "when", "where", "how", "all", "any", "both", "each", "few", "more", "some", "such", "no", "nor", "too", "very", "can", "will", "just", "in", "he", "him", "his", "she", "her", "hers", "they", "their", "theirs", "said", 'there', 'here', 'would', 'could', 'nt']
-
     content_string = ''
     for line in contents:
         content_string += line
@@ -50,12 +48,17 @@ def save(options, contents, filename=None):
     common_words = ''
     counter = 0
     for word in sorted_words:
-        if counter == 4:
+        if counter == common_word_count:
             break
         else:
             if not word in skipped_words:
                 common_words += "-" + word
                 counter += 1
+    return {'count': word_count, 'common': common_words}
+
+def save(options, contents, filename=None):
+    
+    word_stats = get_stats(contents)
 
     # Set filename
     filename = ''
@@ -63,9 +66,9 @@ def save(options, contents, filename=None):
         filename = options.get('-f') or options.get('--filename')
         filename += '-'
     filename += datetime.now().strftime("%Y%m%d%a-%H%M%S")
-    filename += "-" + word_count + "w" if word_count else ''
+    filename += "-" + word_stats['count'] + "w" if word_stats['count'] else ''
     if options.get('filename') == None:
-        filename += common_words 
+        filename += word_stats['common'] 
     
     # Save append
     if options.get('append'):
