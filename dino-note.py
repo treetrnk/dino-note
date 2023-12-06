@@ -2,13 +2,14 @@
 import operator, sys, getopt
 from datetime import datetime
 
-def save_message(options, filename):
+def save_message(options, filename, generated_filename=None):
     if any(o in options for o in ['-n','--no-dino']):
         print('')
         print(f"=== File saved as: {filename} ===")
     else:
         multiplier = len(filename) + 2
         dialog_multiplier = multiplier - 16
+        
         print('')
         print(f"           ▅████████▅    ╭{'─' * multiplier}╮")
         print(f"           ██ ████████   │ File saved as: {' ' * dialog_multiplier}│")
@@ -22,6 +23,8 @@ def save_message(options, filename):
         print("      ██ ▒██             ")
         print("     ███   ███           ")
         print('')
+        if generated_filename:
+            print(generated_filename)
 
     sys.exit()
 
@@ -84,7 +87,7 @@ def save(options, contents, filename=None):
                 f.write(line)
                 f.write("\n")
             f.close()
-            save_message(options, append_file)
+            save_message(options, append_file, generated_filename=filename)
         except Exception as e:
             pass
 
