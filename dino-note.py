@@ -1,5 +1,5 @@
 #! /bin/python
-import operator, sys, getopt
+import operator, os, sys, getopt, re
 from datetime import datetime
 
 def save_message(options, filename, generated_filename=None):
@@ -114,11 +114,75 @@ def write(options, filename=None):
 
     save(options, contents, filename)
 
+def project_prompt(question, variable_type="int", maximum=500):
+    while True:
+        try:
+            if variable_type == "int":
+                response = int(input(question + " "))
+                if response > maximum:
+                    raise ValueError("Response higher than maximum!")
+            elif variable_type == "y/n":
+                response = str(input(question + " (Y/N) ")).lower()
+                if not re.match(r'^[yn]$', response):
+                    raise ValueError("Does not match regex (y/n)")
+            else:
+                response = input(question)
+        except ValueError:
+            if variable_type == "int":
+                print("Invalid response! Please enter a number.")
+            elif variable_type == "y/n":
+                print("Invalid response! Please enter a 'Y' for yes or an 'N' for no.")
+            else:
+                print("Invalid response!")
+        else:
+            break
+    
+    return response
+
+def create_project(options):
+    
+    confirm = project_prompt("This command creates a project folder structure in your current directory. Are you in the directory where you want these folders to be created?", "y/n")
+    
+    if confirm == "n":
+        print("Project creation cancelled! Move to the directory where you want these folders created and run the command again.")
+        sys.exit()
+
+    chapters = project_prompt("How many chapters should this project have?", "int", 250)
+    print(f"Creating {chapters} chapter directories...")
+    count = 1
+    while count <= chapters:
+        os.mkdir(f"Chapter {count}")
+        count += 1
+
+    scenes = project_prompt("How many scenes should each chapter have?", "int", 50)
+    print(f"Creating {scenes} scene directories in each chapter directory...")
+    chap_count = 1
+    base_dir = os.getcwd()
+    while chap_count <= chapters:
+        scene_count = 1
+        while scene_count <= scenes:
+            os.mkdir(f"Chapter {chap_count}/Scene {scene_count}")
+            scene_count += 1
+        chap_count += 1
+    os.chdir(base_dir)
+
+    characters = project_prompt("Generate character folders?", "y/n")
+    if characters == 'y':
+        print(f"Creating Character folders...")
+        os.mkdir('Characters')
+        os.chdir(f"{base_dir}/Characters")
+        os.mkdir('Main')
+        os.mkdir('Secondary')
+        os.mkdir('Locations')
+        os.chdir(base_dir)
+
+    print("Project created successfully!")
+    return True
 
 def main(argv):
     inputfile = ''
     outputfile = ''
-    opts, args = getopt.getopt(argv,"hna:f:",["help","no-dino","append=","filename="])
+    opts, args = getopt.getopt(argv,"hnca:f:",["help","no-dino","create-project","append=","filename="])
     options = {}
     for opt, arg in opts:
         options[opt] = arg
@@ -128,9 +192,13 @@ def main(argv):
         print()
         print('OPTIONS')
         print('\t-h --help\t\t\tDisplay this help message')
+        print('\t-c --create_project\t\tCreate chapter/scene/character folders in the current directory')
         print('\t-a --append [filename]\t\tAppend writing to an existing file')
-        print('\t-f --filename [filename]\t\tSet the name of the file your writing will be saved as')
+        print('\t-f --filename [filename]\tSet the name of the file your writing will be saved as')
         print('\t-n --no-dino\t\t\tHide dino when file is saved')
+        sys.exit()
+    if any(o in options for o in ["-c", "--create_project"]):
+        create_project(options)
         sys.exit()
     if any(o in options for o in ["-f", "--filename"]):
         options['filename'] = options.get('-f') or options.get('--filename')
