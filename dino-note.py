@@ -122,8 +122,8 @@ def project_prompt(question, variable_type="int", maximum=500):
                 if response > maximum:
                     raise ValueError("Response higher than maximum!")
             elif variable_type == "y/n":
-                response = str(input(question + " (Y/N) ")).lower()
-                if not re.match(r'^[yn]$', response):
+                response = str(input(question + " (Y/n) ")).lower()
+                if not re.match(r'^[yn]?$', response):
                     raise ValueError("Does not match regex (y/n)")
             else:
                 response = input(question)
@@ -141,40 +141,59 @@ def project_prompt(question, variable_type="int", maximum=500):
 
 def create_project(options):
     
+    print()
     confirm = project_prompt("This command creates a project folder structure in your current directory. Are you in the directory where you want these folders to be created?", "y/n")
     
     if confirm == "n":
         print("Project creation cancelled! Move to the directory where you want these folders created and run the command again.")
         sys.exit()
+    print()
 
     chapters = project_prompt("How many chapters should this project have?", "int", 250)
-    print(f"Creating {chapters} chapter directories...")
+    print(f"   Creating {chapters} chapter directories...")
     count = 1
+    error = False
+    error_txt = '      - Some or all directories were skipped because they already existed.'
     while count <= chapters:
-        os.mkdir(f"Chapter {count}")
+        try:
+            os.mkdir(f"Chapter {count}")
+        except Exception:
+            error = True
         count += 1
+    if error:
+        print(error_txt)
+    print()
 
+    error = False
     scenes = project_prompt("How many scenes should each chapter have?", "int", 50)
-    print(f"Creating {scenes} scene directories in each chapter directory...")
+    print(f"   Creating {scenes} scene directories in each chapter directory...")
     chap_count = 1
     base_dir = os.getcwd()
     while chap_count <= chapters:
         scene_count = 1
         while scene_count <= scenes:
-            os.mkdir(f"Chapter {chap_count}/Scene {scene_count}")
+            try:
+                os.mkdir(f"Chapter {chap_count}/Scene {scene_count}")
+            except Exception:
+                error = True
             scene_count += 1
         chap_count += 1
     os.chdir(base_dir)
+    if error:
+        print(error_txt)
+    print()
 
     characters = project_prompt("Generate character folders?", "y/n")
-    if characters == 'y':
-        print(f"Creating Character folders...")
-        os.mkdir('Characters')
-        os.chdir(f"{base_dir}/Characters")
-        os.mkdir('Main')
-        os.mkdir('Secondary')
-        os.mkdir('Locations')
-        os.chdir(base_dir)
+    if characters != 'n':
+        print(f"   Creating Character folders...")
+        try:
+            os.mkdir('Characters')
+            os.mkdir('Characters/Main')
+            os.mkdir('Characters/Secondary')
+            os.mkdir('Characters/Locations')
+        except Exception:
+            print(error_txt)
+    print()
 
     print("Project created successfully!")
     return True
